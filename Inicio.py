@@ -30,7 +30,7 @@ with col2:
 # Descripción del proyecto
 st.header("Sobre el Proyecto")
 st.write("""
-[Escribe aquí una breve descripción del proyecto, incluyendo el objetivo principal, la problemática que aborda y el enfoque que se utiliza. Puedes ser creativo y usar un lenguaje atractivo.]
+Este proyecto busca transformar la gestión financiera de una pequeña empresa mediante el desarrollo de una innovadora aplicación diseñada para optimizar la facturación y el control de gastos. En la actualidad, el Administrador enfrenta el desafío de llevar un registro manual que no solo es propenso a errores, sino que también dificulta un seguimiento efectivo de las finanzas. Con esta nueva herramienta, se facilitará el registro preciso de facturas y gastos, además de generar reportes financieros detallados y alertar sobre pagos próximos a vencer. Así, el Administrador podrá tomar decisiones más informadas y estratégicas, asegurando una gestión más eficiente y organizada de los recursos de la empresa.
 """)
 
 # Más información
