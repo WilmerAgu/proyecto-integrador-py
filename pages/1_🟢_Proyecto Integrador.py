@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd  
 import firebase_admin  
 from firebase_admin import credentials, firestore  
+from datetime import datetime
 
 st.set_page_config(layout="wide")
 
@@ -63,58 +64,33 @@ with tab_Generador:
 
     # Lista de ciudades colombianas
     ciudades_colombianas = [
-        'Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 
-        'Cúcuta', 'Bucaramanga', 'Pereira', 'Santa Marta', 'Ibagué',
-        'Pasto', 'Manizales', 'Neiva', 'Villavicencio', 'Armenia'
+        'Bogotá', 'Medellín', 'Cali', 'Barranquilla','Manizales'
+    ]
+    # Lista de Productos
+    categorias_productos = [
+        'Celular', 'Laptop', 'Tablet', 'Audífonos', 'DDS'
+    ]
+    # Lista de Vendedores
+    vendedores = [
+        'Carlos Morales', 'Tatiana Salas', 'Camila Guzman', 'Sergio Torres',
+        'Luisa Gomez', 'Daniel Salinas','Ana Florez', 'Andres Escobar', 'Juan Quiroz',
+        'Marcela Ocampo'
     ]
 
-    def generate_fake_users(n):
-        users = []
+    def generate_fake_facturas(n):
+        datos_facturas = []
         for _ in range(n):
-            user = {
-                'nombre': fake.name(),
-                'email': fake.email(),
-                'edad': random.randint(18, 80),
-                'ciudad': random.choice(ciudades_colombianas)
+            factura = {
+                'numeroFactura': f'FAC-{random.randint(1000, 9999)}-{random.randint(10000, 99999)}',
+                'categorias': random.choice(categorias_productos),
+                'monto': round(random.uniform(50000, 10000000), -3),
+                'vendedor': random.choice(vendedores),
+                'ciudad': random.choice(ciudades_colombianas),
+                # 'fecha': datetime.combine(fake.date_between(start_date='-1y', end_date='today'), datetime.min.time())  # Convertir a datetime
             }
-            users.append(user)
-        return users
+            datos_facturas.append(factura)
+        return datos_facturas
 
-    def generate_fake_products(n):
-        categories = {
-            'Electrónica': [
-                'Celular', 'Portátil', 'Tablet', 'Audífonos', 'Reloj inteligente', 
-                'Cámara digital', 'Parlante Bluetooth', 'Batería portátil', 
-                'Monitor', 'Teclado inalámbrico'
-            ],
-            'Ropa': [
-                'Camiseta', 'Jean', 'Vestido', 'Chaqueta', 'Zapatos', 
-                'Sudadera', 'Medias', 'Ruana', 'Gorra', 'Falda'
-            ],
-            'Hogar': [
-                'Lámpara', 'Cojín', 'Cortinas', 'Olla', 'Juego de sábanas', 
-                'Toallas', 'Espejo', 'Reloj de pared', 'Tapete', 'Florero'
-            ],
-            'Deportes': [
-                'Balón de fútbol', 'Raqueta de tenis', 'Pesas', 
-                'Colchoneta de yoga', 'Bicicleta', 'Tenis para correr', 
-                'Maletín deportivo', 'Termo', 'Guantes de boxeo', 'Lazo para saltar'
-            ]
-        }
-
-        products = []
-        for _ in range(n):
-            category = random.choice(list(categories.keys()))
-            product_type = random.choice(categories[category])
-            
-            product = {
-                'nombre': product_type,
-                'precio': round(random.uniform(10000, 1000000), -3),  # Precios en pesos colombianos
-                'categoria': category,
-                'stock': random.randint(0, 100)
-            }
-            products.append(product)
-        return products
 
     def delete_collection(collection_name):
         docs = db.collection(collection_name).get()
@@ -124,63 +100,41 @@ with tab_Generador:
     def add_data_to_firestore(collection, data):
         for item in data:
             db.collection(collection).add(item)
-    
-    col1, col2 = st.columns(2)
 
-    with col1:
-        st.subheader('Usuarios')
-        num_users = st.number_input('Número de usuarios a generar', min_value=1, max_value=100, value=10)
-        if st.button('Generar y Añadir Usuarios'):
-            with st.spinner('Eliminando usuarios existentes...'):
-                delete_collection('usuarios')
-            with st.spinner('Generando y añadiendo nuevos usuarios...'):
-                users = generate_fake_users(num_users)
-                add_data_to_firestore('usuarios', users)
-            st.success(f'{num_users} usuarios añadidos a Firestore')
-            st.dataframe(pd.DataFrame(users))
+with st.container():  # Usar un contenedor que toma todo el ancho
+    st.subheader('Facturas')
+    num_facturas = st.number_input('Número de facturas a generar', min_value=1, max_value=100, value=10)
+    if st.button('Generar y Añadir Facturas'):
+        with st.spinner('Eliminando facturas existentes...'):
+            delete_collection('facturas')
+        with st.spinner('Generando y añadiendo nuevas facturas...'):
+            datos_facturas = generate_fake_facturas(num_facturas)
+            add_data_to_firestore('facturas', datos_facturas)
+        st.success(f'{num_facturas} facturas añadidas a Firestore')
+        st.dataframe(pd.DataFrame(datos_facturas))
 
-    with col2:
-        st.subheader('Productos')
-        num_products = st.number_input('Número de productos a generar', min_value=1, max_value=100, value=10)
-        if st.button('Generar y Añadir Productos'):
-            with st.spinner('Eliminando productos existentes...'):
-                delete_collection('productos')
-            with st.spinner('Generando y añadiendo nuevos productos...'):
-                products = generate_fake_products(num_products)
-                add_data_to_firestore('productos', products)
-            st.success(f'{num_products} productos añadidos a Firestore')
-            st.dataframe(pd.DataFrame(products))
 
 #----------------------------------------------------------
 #Datos
 #----------------------------------------------------------
 with tab_datos:
     st.write('Esta función muestra datos de usuarios y productos almacenados en una base de datos Firestore, permitiendo una visualización organizada y fácil acceso a la información.')
-    tab_user, tab_prodcutos = st.tabs(["Usuarios", "Prodcutos"])
-    with tab_user:        
-        # Obtener datos de una colección de Firestore
-        users = db.collection('usuarios').stream()
-        # Convertir datos a una lista de diccionarios
-        users_data = [doc.to_dict() for doc in users]
-        # Crear DataFrame
-        df_users = pd.DataFrame(users_data)
-        # Reordenar las columnas
-        column_order = ['nombre', 'email', 'edad', 'ciudad']
-        df_users = df_users.reindex(columns=column_order)   
+    
+    # Cambiar aquí, desempaquetando la pestaña correctamente
+    tab_factura, = st.tabs(["Facturas"])  # Nota el uso de la coma para desempaquetar una sola pestaña
 
-        st.dataframe(df_users)
-    with tab_prodcutos:       
+    with tab_factura:
         # Obtener datos de una colección de Firestore
-        users = db.collection('productos').stream()
+        datos_facturas = db.collection('facturas').stream()
         # Convertir datos a una lista de diccionarios
-        users_data = [doc.to_dict() for doc in users]
+        factura_data = [doc.to_dict() for doc in datos_facturas]
         # Crear DataFrame
-        df_products = pd.DataFrame(users_data)
+        df_datos_facturas = pd.DataFrame(factura_data)
         # Reordenar las columnas
-        column_order = ['nombre', 'categoria', 'precio', 'stock']
-        df_products = df_products.reindex(columns=column_order)
-        
-        st.dataframe(df_products)
+        column_order = ['numeroFactura', 'monto', 'categorias', 'vendedor', 'ciudad', ]
+        df_datos_facturas = df_datos_facturas.reindex(columns=column_order)   
+
+        st.dataframe(df_datos_facturas)
 
 #----------------------------------------------------------
 #Analítica 1
@@ -189,6 +143,7 @@ with tab_Análisis_Exploratorio:
     st.title("Análisis Exploratorio")
     st.markdown("""
     * Muestra las primeras 5 filas del DataFrame.  **(df.head())**
+                
     * Muestra la cantidad de filas y columnas del DataFrame.  **(df.shape)**
     * Muestra los tipos de datos de cada columna.  **(df.dtypes)**
     * Identifica y muestra las columnas con valores nulos. **(df.isnull().sum())**
