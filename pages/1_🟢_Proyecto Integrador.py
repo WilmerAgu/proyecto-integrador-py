@@ -1,10 +1,12 @@
 import random
 from faker import Faker
+from matplotlib import pyplot as plt
 import streamlit as st 
 import pandas as pd  
 import firebase_admin  
 from firebase_admin import credentials, firestore  
 from datetime import datetime
+import seaborn as sns
 
 st.set_page_config(layout="wide")
 
@@ -37,8 +39,40 @@ with tad_descripcion:
     ### Introducción
 
     -   ¿Qué es el proyecto?
+                
+                El proyecto es el desarrollo de una aplicación de facturación 
+                y control de gastos diseñada para que el administrador de una 
+                pequeña empresa gestione de manera más eficiente y organizada 
+                las finanzas de la empresa, facilitando el registro de facturas 
+                y gastos, así como la generación de reportes financieros.
     -   ¿Cuál es el objetivo principal?
+                
+                El objetivo principal del proyecto es desarrollar una herramienta 
+                que permita al administrador gestionar la facturación y el control 
+                de gastos de la empresa de manera organizada y precisa, mejorando 
+                la eficiencia en el seguimiento financiero y reduciendo errores 
+                asociados al registro manual.
     -   ¿Por qué es importante?
+                
+                Precisión Financiera: La automatización del registro de facturas y 
+                gastos reduce la posibilidad de errores humanos, lo que se traduce 
+                en una contabilidad más precisa y confiable.
+
+                Eficiencia en la Gestión: Facilita el seguimiento y la gestión de las 
+                finanzas de la empresa, permitiendo al administrador ahorrar tiempo y 
+                dedicarlo a otras áreas críticas del negocio.
+
+                Visibilidad Financiera: La generación de reportes financieros detallados 
+                proporciona una visión clara del estado financiero de la empresa, lo que 
+                es fundamental para la toma de decisiones estratégicas.
+
+                Prevención de Problemas de Liquidez: Las alertas sobre pagos próximos a 
+                vencer ayudan a evitar retrasos en los pagos, lo que puede prevenir 
+                problemas de liquidez y mejorar las relaciones con proveedores.
+
+                Escalabilidad: Una herramienta digital puede adaptarse a las necesidades 
+                futuras de la empresa, facilitando su crecimiento y evolución sin la 
+                necesidad de cambiar de sistema.
 
     ### Desarrollo
 
@@ -86,7 +120,7 @@ with tab_Generador:
                 'monto': round(random.uniform(50000, 10000000), -3),
                 'vendedor': random.choice(vendedores),
                 'ciudad': random.choice(ciudades_colombianas),
-                # 'fecha': datetime.combine(fake.date_between(start_date='-1y', end_date='today'), datetime.min.time())  # Convertir a datetime
+                'cantidadProductos': random.randint(1, 10)  # Nueva columna de cantidad de productos
             }
             datos_facturas.append(factura)
         return datos_facturas
@@ -101,10 +135,8 @@ with tab_Generador:
         for item in data:
             db.collection(collection).add(item)
 
-with st.container():  # Usar un contenedor que toma todo el ancho
-    st.subheader('Facturas')
-    num_facturas = st.number_input('Número de facturas a generar', min_value=1, max_value=100, value=10)
-    if st.button('Generar y Añadir Facturas'):
+num_facturas = st.number_input('Número de facturas a generar', min_value=1, max_value=100, value=50)
+if st.button('Generar y Añadir Facturas'):
         with st.spinner('Eliminando facturas existentes...'):
             delete_collection('facturas')
         with st.spinner('Generando y añadiendo nuevas facturas...'):
@@ -118,23 +150,107 @@ with st.container():  # Usar un contenedor que toma todo el ancho
 #Datos
 #----------------------------------------------------------
 with tab_datos:
-    st.write('Esta función muestra datos de usuarios y productos almacenados en una base de datos Firestore, permitiendo una visualización organizada y fácil acceso a la información.')
-    
-    # Cambiar aquí, desempaquetando la pestaña correctamente
-    tab_factura, = st.tabs(["Facturas"])  # Nota el uso de la coma para desempaquetar una sola pestaña
+    st.write('Visualización de datos almacenados en Firestore.')
+    tab_factura, = st.tabs(["Facturas"])
 
     with tab_factura:
-        # Obtener datos de una colección de Firestore
         datos_facturas = db.collection('facturas').stream()
-        # Convertir datos a una lista de diccionarios
         factura_data = [doc.to_dict() for doc in datos_facturas]
-        # Crear DataFrame
         df_datos_facturas = pd.DataFrame(factura_data)
-        # Reordenar las columnas
-        column_order = ['numeroFactura', 'monto', 'categorias', 'vendedor', 'ciudad', ]
-        df_datos_facturas = df_datos_facturas.reindex(columns=column_order)   
-
+        column_order = ['numeroFactura', 'monto', 'categorias', 'vendedor', 'ciudad', 'cantidadProductos']
+        df_datos_facturas = df_datos_facturas.reindex(columns=column_order)
         st.dataframe(df_datos_facturas)
+
+ # Gráfica de Productos Vendidos por Vendedor
+if not df_datos_facturas.empty:
+    # Agrupar por vendedor y calcular la cantidad total de productos vendidos
+    productos_por_vendedor = df_datos_facturas.groupby('vendedor').agg({
+        'cantidadProductos': 'sum'
+    }).reset_index()
+
+    # Crear el gráfico de barras
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(x='vendedor', y='cantidadProductos', data=productos_por_vendedor, palette='viridis', ax=ax)
+    
+    # Configurar etiquetas y título
+    ax.set_xlabel('Vendedor')
+    ax.set_ylabel('Cantidad de Unidades Vendidas')
+    ax.set_title('Cantidad de Unidades')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+
+    # Agregar etiquetas en la parte superior de cada barra para mostrar la cantidad exacta
+    for index, row in productos_por_vendedor.iterrows():
+        ax.text(index, row['cantidadProductos'], int(row['cantidadProductos']), color='black', ha="center")
+
+    plt.tight_layout()
+
+    # Mostrar el gráfico en Streamlit
+    st.pyplot(fig)
+    plt.close(fig)
+
+# Agrupar por categoría de producto y sumar la cantidad de productos vendidos
+productos_vendidos = df_datos_facturas.groupby('categorias').agg({
+    'cantidadProductos': 'sum'
+}).reset_index()
+
+# Ordenar los productos de mayor a menor cantidad vendida
+productos_vendidos = productos_vendidos.sort_values('cantidadProductos', ascending=False)
+
+# Configurar el tamaño de la figura
+f, ax = plt.subplots(figsize=(8, 6))
+
+# Gráfico de barras horizontales para mostrar los productos más vendidos
+sns.set_color_codes("pastel")
+sns.barplot(x="cantidadProductos", y="categorias", data=productos_vendidos, color="b")
+
+# Añadir etiquetas y título
+ax.set(xlabel="Cantidad de Productos Vendidos", ylabel="Productos", title="Productos Más Vendidos")
+sns.despine(left=True, bottom=True)
+
+# Mostrar el gráfico en Streamlit
+st.pyplot(f)
+plt.close(f)
+
+
+# Gráfica de Dona para Productos Vendidos por Ciudad
+if not df_datos_facturas.empty:
+    # Agrupar por ciudad y calcular la cantidad total de productos vendidos
+    productos_por_ciudad = df_datos_facturas.groupby('ciudad').agg({
+        'cantidadProductos': 'sum'
+    }).reset_index()
+
+    # Ordenar por la cantidad de productos vendidos en orden descendente
+    productos_por_ciudad = productos_por_ciudad.sort_values(by='cantidadProductos', ascending=False)
+
+    # Crear el gráfico de dona
+    fig, ax = plt.subplots(figsize=(8, 8))
+    wedges, texts, autotexts = ax.pie(
+        productos_por_ciudad['cantidadProductos'], 
+        labels=productos_por_ciudad['ciudad'], 
+        autopct='%1.1f%%', 
+        startangle=90, 
+        wedgeprops={'width': 0.3},  # Esto crea el efecto de dona
+        colors=sns.color_palette("pastel", len(productos_por_ciudad)),  # Paleta de colores clara
+        pctdistance=0.85  # Controla la distancia de los porcentajes respecto al centro
+    )
+
+    # Configurar el estilo de los porcentajes para que sean más grandes y visibles
+    plt.setp(autotexts, size=12, weight="bold", color="black")
+
+    # Título del gráfico
+    ax.set_title('Distribución de Unidades Vendidas por Ciudad')
+
+    # Mostrar el gráfico en Streamlit
+    st.pyplot(fig)
+    plt.close(fig)
+
+
+
+
+
+
+
+        
 
 #----------------------------------------------------------
 #Analítica 1
