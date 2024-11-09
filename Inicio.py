@@ -19,28 +19,28 @@ col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.image("./static/user.png", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Nombre del Integrante 1]**")
-    st.write("[Rol en el proyecto]")
+    st.write("**[Alejandra Gonzalez]**")
+    st.write("[Desarrollador]")
 
 with col2:
     st.image("./static/user.png", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Nombre del Integrante 2]**")
-    st.write("[Rol en el proyecto]")
+    st.write("**[Wilmer Agudelo]**")
+    st.write("[Desarrollador ]")
 
 with col3:
     st.image("./static/user.png", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Nombre del Integrante 3]**")
-    st.write("[Rol en el proyecto]")
+    st.write("**[Daniel Sanchez]**")
+    st.write("[Desarrollador ]")
 
 with col4:
     st.image("./static/user.png", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Nombre del Integrante 4]**")
-    st.write("[Rol en el proyecto]")
+    st.write("**[Andres Osorio]**")
+    st.write("[Desarrollador ]")
 
 with col5:
     st.image("./static/user.png", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Nombre del Integrante 5]**")
-    st.write("[Rol en el proyecto]")
+    st.write("**[Mauricio Escobar]**")
+    st.write("[Desarrollador]")
     
     
 
