@@ -27,7 +27,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 
-tad_descripcion, tab_Generador, tab_datos, tab_Análisis_Exploratorio, tab_Filtrado_Básico, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Generador de datos", "Datos", "Análisis Exploratorio", "Filtrado Básico", "Filtro Final Dinámico"])
+tad_descripcion, tab_Generador, tab_datos, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Generador de datos", "Datos", "Análisis Exploratorio",  "Filtro Final Dinámico"])
 
 #----------------------------------------------------------
 #Generador de datos
@@ -268,18 +268,6 @@ with tab_Análisis_Exploratorio:
     * Otra información importante  
     """)
     
-#----------------------------------------------------------
-#Analítica 2
-#----------------------------------------------------------
-with tab_Filtrado_Básico:
-        st.title("Filtro Básico")
-        st.markdown("""
-        * Permite filtrar datos usando condiciones simples. **(df[df['columna'] == 'valor'])**
-        * Permite seleccionar una columna y un valor para el filtro. **(st.selectbox, st.text_input)**
-        * Permite elegir un operador de comparación (igual, diferente, mayor que, menor que). **(st.radio)**
-        * Muestra los datos filtrados en una tabla. **(st.dataframe)** 
-        """)
-
 #----------------------------------------------------------
 #Analítica 2
 #----------------------------------------------------------

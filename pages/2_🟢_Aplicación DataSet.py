@@ -8,7 +8,7 @@ st.subheader("Análisis y Filtrado de Datos")
 df = pd.read_csv('./static/datasets/ventas.csv')
 
 
-tad_descripcion, tab_Análisis_Exploratorio, tab_Filtrado_Básico, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Análisis Exploratorio", "Filtrado Básico", "Filtro Final Dinámico"])
+tad_descripcion, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Análisis Exploratorio", "Filtro Final Dinámico"])
 
 #----------------------------------------------------------
 #Generador de datos
@@ -54,18 +54,7 @@ with tab_Análisis_Exploratorio:
     """)   
     
 #----------------------------------------------------------
-#Analítica 2
-#----------------------------------------------------------
-with tab_Filtrado_Básico:
-        st.title("Filtro Básico")
-        st.markdown("""
-        * Permite filtrar datos usando condiciones simples. **(df[df['columna'] == 'valor'])**
-        * Permite seleccionar una columna y un valor para el filtro. **(st.selectbox, st.text_input)**
-        * Permite elegir un operador de comparación (igual, diferente, mayor que, menor que). **(st.radio)**
-        * Muestra los datos filtrados en una tabla. **(st.dataframe)** 
-        """)
 
-#----------------------------------------------------------
 #Analítica 3
 #----------------------------------------------------------
 with tab_Filtro_Final_Dinámico:
