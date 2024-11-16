@@ -18,7 +18,7 @@ st.header("Nuestro Equipo")
 col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
-    st.image("./static/user.png", width=200)  # Reemplaza con la ruta de la foto
+    st.image("./static/user.png", width=200 )  # Reemplaza con la ruta de la foto
     st.write("**[Alejandra Gonzalez]**")
     st.write("[Desarrollador]")
 
@@ -28,12 +28,12 @@ with col2:
     st.write("[Desarrollador ]")
 
 with col3:
-    st.image("./static/user.png", width=200)  # Reemplaza con la ruta de la foto
+    st.image("./static/Daniel.jpeg", width=200)  # Reemplaza con la ruta de la foto
     st.write("**[Daniel Sanchez]**")
     st.write("[Desarrollador ]")
 
 with col4:
-    st.image("./static/user.png", width=200)  # Reemplaza con la ruta de la foto
+    st.image("./static/Andres.jpeg", width=200)  # Reemplaza con la ruta de la foto
     st.write("**[Andres Osorio]**")
     st.write("[Desarrollador ]")
 
