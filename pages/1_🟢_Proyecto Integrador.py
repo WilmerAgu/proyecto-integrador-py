@@ -159,114 +159,148 @@ with tab_datos:
         df_datos_facturas = df_datos_facturas.reindex(columns=column_order)
         st.dataframe(df_datos_facturas)
 
- # Gráfica de Productos Vendidos por Vendedor
-if not df_datos_facturas.empty:
-    # Agrupar por vendedor y calcular la cantidad total de productos vendidos
-    productos_por_vendedor = df_datos_facturas.groupby('vendedor').agg({
-        'cantidadProductos': 'sum'
-    }).reset_index()
-
-    # Crear el gráfico de barras
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(x='vendedor', y='cantidadProductos', data=productos_por_vendedor, palette='viridis', ax=ax)
-    
-    # Configurar etiquetas y título
-    ax.set_xlabel('Vendedor')
-    ax.set_ylabel('Cantidad de Unidades Vendidas')
-    ax.set_title('Cantidad de Unidades')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-
-    # Agregar etiquetas en la parte superior de cada barra para mostrar la cantidad exacta
-    for index, row in productos_por_vendedor.iterrows():
-        ax.text(index, row['cantidadProductos'], int(row['cantidadProductos']), color='black', ha="center")
-
-    plt.tight_layout()
-
-    # Mostrar el gráfico en Streamlit
-    st.pyplot(fig)
-    plt.close(fig)
-
-# Agrupar por categoría de producto y sumar la cantidad de productos vendidos
-productos_vendidos = df_datos_facturas.groupby('categorias').agg({
-    'cantidadProductos': 'sum'
-}).reset_index()
-
-# Ordenar los productos de mayor a menor cantidad vendida
-productos_vendidos = productos_vendidos.sort_values('cantidadProductos', ascending=False)
-
-# Configurar el tamaño de la figura
-f, ax = plt.subplots(figsize=(8, 6))
-
-# Gráfico de barras horizontales para mostrar los productos más vendidos
-sns.set_color_codes("pastel")
-sns.barplot(x="cantidadProductos", y="categorias", data=productos_vendidos, color="b")
-
-# Añadir etiquetas y título
-ax.set(xlabel="Cantidad de Productos Vendidos", ylabel="Productos", title="Productos Más Vendidos")
-sns.despine(left=True, bottom=True)
-
-# Mostrar el gráfico en Streamlit
-st.pyplot(f)
-plt.close(f)
-
-
-# Gráfica de Dona para Productos Vendidos por Ciudad
-if not df_datos_facturas.empty:
-    # Agrupar por ciudad y calcular la cantidad total de productos vendidos
-    productos_por_ciudad = df_datos_facturas.groupby('ciudad').agg({
-        'cantidadProductos': 'sum'
-    }).reset_index()
-
-    # Ordenar por la cantidad de productos vendidos en orden descendente
-    productos_por_ciudad = productos_por_ciudad.sort_values(by='cantidadProductos', ascending=False)
-
-    # Crear el gráfico de dona
-    fig, ax = plt.subplots(figsize=(8, 8))
-    wedges, texts, autotexts = ax.pie(
-        productos_por_ciudad['cantidadProductos'], 
-        labels=productos_por_ciudad['ciudad'], 
-        autopct='%1.1f%%', 
-        startangle=90, 
-        wedgeprops={'width': 0.3},  # Esto crea el efecto de dona
-        colors=sns.color_palette("pastel", len(productos_por_ciudad)),  # Paleta de colores clara
-        pctdistance=0.85  # Controla la distancia de los porcentajes respecto al centro
-    )
-
-    # Configurar el estilo de los porcentajes para que sean más grandes y visibles
-    plt.setp(autotexts, size=12, weight="bold", color="black")
-
-    # Título del gráfico
-    ax.set_title('Distribución de Unidades Vendidas por Ciudad')
-
-    # Mostrar el gráfico en Streamlit
-    st.pyplot(fig)
-    plt.close(fig)
+ 
 
 #----------------------------------------------------------
 #Analítica 1
 #----------------------------------------------------------
-with tab_Análisis_Exploratorio:    
+with tab_Análisis_Exploratorio:
     st.title("Análisis Exploratorio")
+    
     st.markdown("""
-    * Muestra las primeras 5 filas del DataFrame.  **(df.head())**
-                
-    * Muestra la cantidad de filas y columnas del DataFrame.  **(df.shape)**
-    * Muestra los tipos de datos de cada columna.  **(df.dtypes)**
+    * Muestra las primeras 5 filas del DataFrame. **(df.head())**
+    * Muestra la cantidad de filas y columnas del DataFrame. **(df.shape)**
+    * Muestra los tipos de datos de cada columna. **(df.dtypes)**
     * Identifica y muestra las columnas con valores nulos. **(df.isnull().sum())**
-    * Muestra un resumen estadístico de las columnas numéricas.  **(df.describe())**
-    * Muestra una tabla con la frecuencia de valores únicos para una columna categórica seleccionada. **(df['columna_categorica'].value_counts())** 
-    * Otra información importante  
+    * Muestra un resumen estadístico de las columnas numéricas. **(df.describe())**
+    * Muestra una tabla con la frecuencia de valores únicos para una columna categórica seleccionada. **(df['columna_categorica'].value_counts())**
+    * Otra información importante.
     """)
+    
+    if not df_datos_facturas.empty:
+        # Mostrar las primeras 5 filas
+        st.subheader("Primeras 5 filas del DataFrame")
+        st.write(df_datos_facturas.head())
+
+        # Mostrar la cantidad de filas y columnas
+        st.subheader("Cantidad de filas y columnas")
+        st.write(f"Filas: {df_datos_facturas.shape[0]}, Columnas: {df_datos_facturas.shape[1]}")
+
+        # Mostrar los tipos de datos de cada columna
+        st.subheader("Tipos de datos de las columnas")
+        st.write(df_datos_facturas.dtypes)
+
+        # Mostrar las columnas con valores nulos
+        st.subheader("Columnas con valores nulos")
+        st.write(df_datos_facturas.isnull().sum())
+
+        # Resumen estadístico de las columnas numéricas
+        st.subheader("Resumen estadístico de columnas numéricas")
+        st.write(df_datos_facturas.describe())
+
+        # Mostrar la frecuencia de valores únicos de una columna categórica
+        st.subheader("Frecuencia de valores únicos en una columna categórica")
+        columna_categorica = st.selectbox("Selecciona una columna categórica", df_datos_facturas.select_dtypes(include=['object']).columns)
+        st.write(df_datos_facturas[columna_categorica].value_counts())
+
+        # Otra información importante (puedes agregar más métricas o análisis)
+        st.subheader("Otra información importante")
+        # Ejemplo: Distribución de la columna 'monto'
+        st.write(df_datos_facturas['monto'].describe())
+
     
 #----------------------------------------------------------
 #Analítica 2
-#----------------------------------------------------------
+#-----------------------------------------------# Gráfica de Productos Vendidos por Vendedor
+   
+      
 with tab_Filtro_Final_Dinámico:
-        st.title("Filtro Final Dinámico")
-        st.markdown("""
+    st.title("Filtro Final Dinámico")
+
+    if not df_datos_facturas.empty:
+        # Agrupar por vendedor y calcular la cantidad total de productos vendidos
+        productos_por_vendedor = df_datos_facturas.groupby('vendedor').agg({
+            'cantidadProductos': 'sum'
+        }).reset_index()
+
+        # Crear el gráfico de barras
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(x='vendedor', y='cantidadProductos', data=productos_por_vendedor, palette='viridis', ax=ax)
+        
+        # Configurar etiquetas y título
+        ax.set_xlabel('Vendedor')
+        ax.set_ylabel('Cantidad de Unidades Vendidas')
+        ax.set_title('Cantidad de Unidades')
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+
+        # Agregar etiquetas en la parte superior de cada barra para mostrar la cantidad exacta
+        for index, row in productos_por_vendedor.iterrows():
+            ax.text(index, row['cantidadProductos'], int(row['cantidadProductos']), color='black', ha="center")
+
+        plt.tight_layout()
+
+        # Mostrar el gráfico en Streamlit
+        st.pyplot(fig)
+        plt.close(fig)
+
+    # Agrupar por categoría de producto y sumar la cantidad de productos vendidos
+    productos_vendidos = df_datos_facturas.groupby('categorias').agg({
+        'cantidadProductos': 'sum'
+    }).reset_index()
+
+    # Ordenar los productos de mayor a menor cantidad vendida
+    productos_vendidos = productos_vendidos.sort_values('cantidadProductos', ascending=False)
+
+    # Configurar el tamaño de la figura
+    f, ax = plt.subplots(figsize=(8, 6))
+
+    # Gráfico de barras horizontales para mostrar los productos más vendidos
+    sns.set_color_codes("pastel")
+    sns.barplot(x="cantidadProductos", y="categorias", data=productos_vendidos, color="b")
+
+    # Añadir etiquetas y título
+    ax.set(xlabel="Cantidad de Productos Vendidos", ylabel="Productos", title="Productos Más Vendidos")
+    sns.despine(left=True, bottom=True)
+
+    # Mostrar el gráfico en Streamlit
+    st.pyplot(f)
+    plt.close(f)
+
+    # Gráfica de Dona para Productos Vendidos por Ciudad
+    if not df_datos_facturas.empty:
+        # Agrupar por ciudad y calcular la cantidad total de productos vendidos
+        productos_por_ciudad = df_datos_facturas.groupby('ciudad').agg({
+            'cantidadProductos': 'sum'
+        }).reset_index()
+
+        # Ordenar por la cantidad de productos vendidos en orden descendente
+        productos_por_ciudad = productos_por_ciudad.sort_values(by='cantidadProductos', ascending=False)
+
+        # Crear el gráfico de dona
+        fig, ax = plt.subplots(figsize=(8, 8))
+        wedges, texts, autotexts = ax.pie(
+            productos_por_ciudad['cantidadProductos'], 
+            labels=productos_por_ciudad['ciudad'], 
+            autopct='%1.1f%%', 
+            startangle=90, 
+            wedgeprops={'width': 0.3},  # Esto crea el efecto de dona
+            colors=sns.color_palette("pastel", len(productos_por_ciudad)),  # Paleta de colores clara
+            pctdistance=0.85  # Controla la distancia de los porcentajes respecto al centro
+        )
+
+        # Configurar el estilo de los porcentajes para que sean más grandes y visibles
+        plt.setp(autotexts, size=12, weight="bold", color="black")
+
+        # Título del gráfico
+        ax.set_title('Distribución de Unidades Vendidas por Ciudad')
+
+        # Mostrar el gráfico en Streamlit
+        st.pyplot(fig)
+        plt.close(fig)
+
+    # Información adicional sobre el filtro dinámico
+    st.markdown("""
         * Muestra un resumen dinámico del DataFrame filtrado. 
         * Incluye información como los criterios de filtrado aplicados, la tabla de datos filtrados, gráficos y estadísticas relevantes.
         * Se actualiza automáticamente cada vez que se realiza un filtro en las pestañas anteriores. 
-        """)
-
-
+    """)
