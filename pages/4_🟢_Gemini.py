@@ -3,6 +3,7 @@ import google.generativeai as genai
 import pandas as pd
 from fpdf import FPDF
 from datetime import datetime
+import os
 
 # Configura la API Key de Google Generative AI
 genai.configure(api_key=st.secrets.GEMINI.api_key)
@@ -39,38 +40,44 @@ if st.button("Generar Factura"):
         df = pd.DataFrame(factura_data)
 
         # Mostrar la factura en Streamlit
-        st.write("Factura generada:")
+        st.write("Factura Pro:")
         st.write(df)
 
-        # Opción para descargar la factura como Excel
-        excel_file = df.to_excel(index=False)
-        st.download_button(
-            label="Descargar como Excel",
-            data=excel_file,
-            file_name="factura.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        # Generar el contenido de la factura utilizando el modelo Gemini
+        respuesta = model.generate_content("Genera una factura con los siguientes datos: " + df.to_string())
+        st.write(respuesta.text)
 
-        # Opción para generar y descargar el PDF
+        # Crear el PDF de la factura
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", size=12)
+
+        # Título de la factura
+        pdf.cell(200, 10, txt="Factura Generada", ln=True, align="C")
+        pdf.ln(10)  # Espacio entre líneas
+
+        # Información de la factura
         pdf.cell(200, 10, txt=f"Número de Factura: {numero_factura}", ln=True)
-        pdf.cell(200, 10, txt=f"Monto Total: ${monto:.2f}", ln=True)
+        pdf.cell(200, 10, txt=f"Monto Total: {monto}", ln=True)
         pdf.cell(200, 10, txt=f"Categoría: {categoria}", ln=True)
         pdf.cell(200, 10, txt=f"Vendedor: {vendedor}", ln=True)
         pdf.cell(200, 10, txt=f"Ciudad: {ciudad}", ln=True)
-        pdf.cell(200, 10, txt=f"Fecha: {fecha.strftime('%d/%m/%Y')}", ln=True)
+        pdf.cell(200, 10, txt=f"Fecha: {fecha}", ln=True)
 
-        # Guardar PDF en un archivo
-        pdf_output = pdf.output(dest="S").encode("latin1")
+        # Guardar el PDF en el directorio actual de trabajo
+        pdf_output = "factura_Pro.pdf"  # Guarda en el directorio actual
 
-        # Opción para descargar el PDF
-        st.download_button(
-            label="Descargar como PDF",
-            data=pdf_output,
-            file_name="factura.pdf",
-            mime="application/pdf"
-        )
+        # Crear el archivo PDF
+        pdf.output(pdf_output)
+
+        # Crear un enlace de descarga en Streamlit
+        with open(pdf_output, "rb") as pdf_file:
+            btn = st.download_button(
+                label="Descargar Factura en PDF",
+                data=pdf_file,
+                file_name=pdf_output,
+                mime="application/pdf"
+            )
+        
     else:
         st.warning("Por favor completa todos los campos antes de generar la factura.")
