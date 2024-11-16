@@ -26,16 +26,14 @@ if not firebase_admin._apps:
 # Obtener el cliente de Firestore
 db = firestore.client()
 
-
+# Definición de las pestañas
 tad_descripcion, tab_Generador, tab_datos, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Generador de datos", "Datos", "Análisis Exploratorio",  "Filtro Final Dinámico"])
 
 #----------------------------------------------------------
-#Generador de datos
+# Descripción (Contenido estático)
 #----------------------------------------------------------
 with tad_descripcion:      
-
     st.markdown('''   
-
     ### Introducción
 
     -   ¿Qué es el proyecto?
@@ -89,7 +87,7 @@ with tad_descripcion:
     ''')
 
 #----------------------------------------------------------
-#Generador de datos
+# Generador de datos (Aquí solo se generarán los datos si se está en la pestaña correspondiente)
 #----------------------------------------------------------
 with tab_Generador:
     st.write('Esta función Python genera datos ficticios de usuarios y productos y los carga en una base de datos Firestore, proporcionando una interfaz sencilla para controlar la cantidad de datos generados y visualizar los resultados.')
@@ -135,16 +133,16 @@ with tab_Generador:
         for item in data:
             db.collection(collection).add(item)
 
-num_facturas = st.number_input('Número de facturas a generar', min_value=1, max_value=100, value=50)
-if st.button('Generar y Añadir Facturas'):
-        with st.spinner('Eliminando facturas existentes...'):
-            delete_collection('facturas')
-        with st.spinner('Generando y añadiendo nuevas facturas...'):
-            datos_facturas = generate_fake_facturas(num_facturas)
-            add_data_to_firestore('facturas', datos_facturas)
-        st.success(f'{num_facturas} facturas añadidas a Firestore')
-        st.dataframe(pd.DataFrame(datos_facturas))
-
+    num_facturas = st.number_input('Número de facturas a generar', min_value=1, max_value=100, value=50)
+    if st.button('Generar y Añadir Facturas'):
+            with st.spinner('Eliminando facturas existentes...'):
+                delete_collection('facturas')
+            with st.spinner('Generando y añadiendo nuevas facturas...'):
+                datos_facturas = generate_fake_facturas(num_facturas)
+                add_data_to_firestore('facturas', datos_facturas)
+            st.success(f'{num_facturas} facturas añadidas a Firestore')
+            st.dataframe(pd.DataFrame(datos_facturas))
+            
 
 #----------------------------------------------------------
 #Datos
@@ -243,14 +241,6 @@ if not df_datos_facturas.empty:
     # Mostrar el gráfico en Streamlit
     st.pyplot(fig)
     plt.close(fig)
-
-
-
-
-
-
-
-        
 
 #----------------------------------------------------------
 #Analítica 1
