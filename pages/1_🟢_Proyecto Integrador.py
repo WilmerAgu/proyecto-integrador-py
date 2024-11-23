@@ -15,13 +15,14 @@ st.subheader("Proyecto Integrador")
 # Verificar si ya existe una instancia de la aplicación
 if not firebase_admin._apps:  
     # Cargar las credenciales de Firebase desde los secretos de Streamlit
-    firebase_credentials = st.secrets["FIREBASE_CREDENTIALS"]  
+    firebase_credentials = st.secrets["FIREBASE_CREDENTIALS"] 
     # Convertir las credenciales a un diccionario Python
     secrets_dict = firebase_credentials.to_dict()  
     # Crear un objeto de credenciales usando el diccionario 
     cred = credentials.Certificate(secrets_dict)  
     # Inicializar la aplicación de Firebase con las credenciales
     app = firebase_admin.initialize_app(cred)
+   
 
 # Obtener el cliente de Firestore
 db = firestore.client()
@@ -145,7 +146,7 @@ with tab_Generador:
             
 
 #----------------------------------------------------------
-#Datos
+# Datos
 #----------------------------------------------------------
 with tab_datos:
     st.write('Visualización de datos almacenados en Firestore.')
@@ -162,7 +163,7 @@ with tab_datos:
  
 
 #----------------------------------------------------------
-#Analítica 1
+# Analítica 1
 #----------------------------------------------------------
 with tab_Análisis_Exploratorio:
     st.title("Análisis Exploratorio")
@@ -210,97 +211,23 @@ with tab_Análisis_Exploratorio:
 
     
 #----------------------------------------------------------
-#Analítica 2
-#-----------------------------------------------# Gráfica de Productos Vendidos por Vendedor
-   
-      
+# Analítica 2 con filtros dinámicos y gráficos
+#----------------------------------------------------------
 with tab_Filtro_Final_Dinámico:
-    st.title("Filtro Final Dinámico")
-
+    st.title("Filtros Dinámicos con Gráficas")
+    
     if not df_datos_facturas.empty:
-        # Agrupar por vendedor y calcular la cantidad total de productos vendidos
-        productos_por_vendedor = df_datos_facturas.groupby('vendedor').agg({
-            'cantidadProductos': 'sum'
-        }).reset_index()
-
-        # Crear el gráfico de barras
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(x='vendedor', y='cantidadProductos', data=productos_por_vendedor, palette='viridis', ax=ax)
+        # Filtros dinámicos: Productos por Vendedor
+        st.subheader("Cantidad de productos vendidos por Vendedor")
+        vendedor_filtro = st.selectbox("Selecciona un vendedor", df_datos_facturas['vendedor'].unique())
+        df_vendedor = df_datos_facturas[df_datos_facturas['vendedor'] == vendedor_filtro]
+        st.write(f"Cantidad de productos vendidos por {vendedor_filtro}:")
         
-        # Configurar etiquetas y título
-        ax.set_xlabel('Vendedor')
-        ax.set_ylabel('Cantidad de Unidades Vendidas')
-        ax.set_title('Cantidad de Unidades')
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+        # Mostrar tabla de productos vendidos por vendedor
+        st.write(df_vendedor.groupby("categorias")["cantidadProductos"].sum().reset_index())
 
-        # Agregar etiquetas en la parte superior de cada barra para mostrar la cantidad exacta
-        for index, row in productos_por_vendedor.iterrows():
-            ax.text(index, row['cantidadProductos'], int(row['cantidadProductos']), color='black', ha="center")
-
-        plt.tight_layout()
-
-        # Mostrar el gráfico en Streamlit
-        st.pyplot(fig)
-        plt.close(fig)
-
-    # Agrupar por categoría de producto y sumar la cantidad de productos vendidos
-    productos_vendidos = df_datos_facturas.groupby('categorias').agg({
-        'cantidadProductos': 'sum'
-    }).reset_index()
-
-    # Ordenar los productos de mayor a menor cantidad vendida
-    productos_vendidos = productos_vendidos.sort_values('cantidadProductos', ascending=False)
-
-    # Configurar el tamaño de la figura
-    f, ax = plt.subplots(figsize=(8, 6))
-
-    # Gráfico de barras horizontales para mostrar los productos más vendidos
-    sns.set_color_codes("pastel")
-    sns.barplot(x="cantidadProductos", y="categorias", data=productos_vendidos, color="b")
-
-    # Añadir etiquetas y título
-    ax.set(xlabel="Cantidad de Productos Vendidos", ylabel="Productos", title="Productos Más Vendidos")
-    sns.despine(left=True, bottom=True)
-
-    # Mostrar el gráfico en Streamlit
-    st.pyplot(f)
-    plt.close(f)
-
-    # Gráfica de Dona para Productos Vendidos por Ciudad
-    if not df_datos_facturas.empty:
-        # Agrupar por ciudad y calcular la cantidad total de productos vendidos
-        productos_por_ciudad = df_datos_facturas.groupby('ciudad').agg({
-            'cantidadProductos': 'sum'
-        }).reset_index()
-
-        # Ordenar por la cantidad de productos vendidos en orden descendente
-        productos_por_ciudad = productos_por_ciudad.sort_values(by='cantidadProductos', ascending=False)
-
-        # Crear el gráfico de dona
-        fig, ax = plt.subplots(figsize=(8, 8))
-        wedges, texts, autotexts = ax.pie(
-            productos_por_ciudad['cantidadProductos'], 
-            labels=productos_por_ciudad['ciudad'], 
-            autopct='%1.1f%%', 
-            startangle=90, 
-            wedgeprops={'width': 0.3},  # Esto crea el efecto de dona
-            colors=sns.color_palette("pastel", len(productos_por_ciudad)),  # Paleta de colores clara
-            pctdistance=0.85  # Controla la distancia de los porcentajes respecto al centro
-        )
-
-        # Configurar el estilo de los porcentajes para que sean más grandes y visibles
-        plt.setp(autotexts, size=12, weight="bold", color="black")
-
-        # Título del gráfico
-        ax.set_title('Distribución de Unidades Vendidas por Ciudad')
-
-        # Mostrar el gráfico en Streamlit
-        st.pyplot(fig)
-        plt.close(fig)
-
-    # Información adicional sobre el filtro dinámico
-    st.markdown("""
-        * Muestra un resumen dinámico del DataFrame filtrado. 
-        * Incluye información como los criterios de filtrado aplicados, la tabla de datos filtrados, gráficos y estadísticas relevantes.
-        * Se actualiza automáticamente cada vez que se realiza un filtro en las pestañas anteriores. 
-    """)
+        # Mostrar gráfico de barras
+        st.subheader(f"Gráfico de productos vendidos por {vendedor_filtro}")
+        plt.figure(figsize=(8, 6))
+        sns.barplot(x='categorias', y='cantidadProductos', data=df_vendedor.groupby("categorias")["cantidadProductos"].sum().reset_index())
+        st.pyplot()
