@@ -6,7 +6,7 @@ st.set_page_config(layout="wide", page_title="Mapping Demo", page_icon="🌍")
 
 # Título y subtítulo
 st.title("Proyecto Integrador: Factura Pro")
-st.subheader("Un Viaje Creativo con [Factura Pro]")
+st.subheader("Un Viaje Creativo con Factura Pro")
 
 # Imagen de fondo
 image = Image.open("./static/proyecto integrador.png")
@@ -19,28 +19,28 @@ col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.image("./static/Aleja.jpeg", width=200 )  # Reemplaza con la ruta de la foto
-    st.write("*[Alejandra Gonzalez]*")
-    st.write("[Desarrolladora]")
+    st.write("*Alejandra Gonzalez*")
+    st.write("Desarrolladora")
 
 with col2:
     st.image("./static/Wilmer.jpeg", width=200)  # Reemplaza con la ruta de la foto
-    st.write("*[Wilmer Agudelo]*")
-    st.write("[Desarrollador ]")
+    st.write("*Wilmer Agudelo*")
+    st.write("Desarrollador ")
 
 with col3:
     st.image("./static/Daniel.jpeg", width=200)  # Reemplaza con la ruta de la foto
-    st.write("*[Daniel Sanchez]*")
-    st.write("[Desarrollador ]")
+    st.write("*Daniel Sanchez*")
+    st.write("Desarrollador ")
 
 with col4:
     st.image("./static/Andres.jpeg", width=200)  # Reemplaza con la ruta de la foto
-    st.write("*[Andres Osorio]*")
-    st.write("[Desarrollador ]")
+    st.write("*[Andres Osorio*")
+    st.write("Desarrollador ")
 
 with col5:
     st.image("./static/Mauro.jpeg", width=200)  # Reemplaza con la ruta de la foto
-    st.write("*[Mauricio Escobar]*")
-    st.write("[Desarrollador]")
+    st.write("*Mauricio Escobar*")
+    st.write("Desarrollador")
     
     
 
