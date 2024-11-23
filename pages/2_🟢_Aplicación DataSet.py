@@ -104,6 +104,7 @@ with tab_Análisis_Exploratorio:
 #----------------------------------------------------------
 # Analítica 3
 #----------------------------------------------------------
+<<<<<<< HEAD
 with tab_Filtro_Final_Dinámico:
     st.title("Filtro Final Dinámico")
     st.markdown("""
@@ -159,3 +160,16 @@ with tab_Filtro_Final_Dinámico:
     ax.set_xlabel("Fecha")
     ax.set_ylabel("Total Pasajeros")
     st.pyplot(fig)
+=======
+# Pestaña de Filtro Final Dinámico
+    with st.sidebar:  # Cambia esta línea según cómo quieras organizar tu app
+     st.title("Filtro Final Dinámico")
+    st.markdown("""
+        * Muestra un resumen dinámico del DataFrame filtrado. 
+        * Incluye información como los criterios de filtrado aplicados, la tabla de datos filtrados, gráficos y estadísticas relevantes.
+        * Se actualiza automáticamente cada vez que se realiza un filtro en las pestañas anteriores. 
+        """)
+
+
+
+>>>>>>> 0c73c35e6a42f25853d1c948b7856afe89bcbcec
