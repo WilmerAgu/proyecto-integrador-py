@@ -101,6 +101,7 @@ with tab_Análisis_Exploratorio:
     except Exception as e:
         st.error(f"Se produjo un error al procesar el archivo: {e}")
 
+
 #----------------------------------------------------------
 # Analítica 3
 #----------------------------------------------------------

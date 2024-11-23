@@ -9,8 +9,8 @@ st.title("Proyecto Integrador: Factura Pro")
 st.subheader("Un Viaje Creativo con [Factura Pro]")
 
 # Imagen de fondo
-image = Image.open("./static/proyecto integrador.png") 
-st.image(image, width=700, use_column_width=True)  
+image = Image.open("./static/proyecto integrador.png")
+st.image(image, width=700, use_column_width=True)
 
 # Integrantes
 st.header("Nuestro Equipo")
@@ -19,13 +19,8 @@ col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.image("./static/Aleja.jpeg", width=200 )  # Reemplaza con la ruta de la foto
-<<<<<<< HEAD
     st.write("*[Alejandra Gonzalez]*")
-    st.write("[Desarrollador]")
-=======
-    st.write("**[Alejandra Gonzalez]**")
     st.write("[Desarrolladora]")
->>>>>>> 0c73c35e6a42f25853d1c948b7856afe89bcbcec
 
 with col2:
     st.image("./static/Wilmer.jpeg", width=200)  # Reemplaza con la ruta de la foto
