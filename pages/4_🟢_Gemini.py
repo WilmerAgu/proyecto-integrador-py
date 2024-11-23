@@ -44,8 +44,26 @@ if st.button("Generar Factura"):
         st.write(df)
 
         # Generar el contenido de la factura utilizando el modelo Gemini
-        respuesta = model.generate_content("Genera una factura con los siguientes datos: " + df.to_string())
-        st.write(respuesta.text)
+        prompt = f"""
+        Genera una factura profesional en formato cuadrilla con los siguientes datos.
+        - Número de Factura: {numero_factura}
+        - Monto Total: {monto}
+        - Categoría: {categoria}
+        - Vendedor: {vendedor}
+        - Ciudad: {ciudad}
+        - Fecha: {fecha}
+
+        **Formato requerido**:
+        1. Encabezado con título: "Factura Comercial".
+        2. Tabla con los detalles de la transacción, como descripción, cantidad, y total.
+        3. Resumen con el monto total destacado.
+        4. Nota final: "Gracias por su compra. Para cualquier consulta, comuníquese con nosotros."
+        """
+        respuesta = model.generate_content(prompt)
+
+        # Mostrar el contenido generado
+        st.write("Factura generada por Gemini:")
+        st.text_area("Contenido de la factura:", respuesta.text, height=300)
 
         # Crear el PDF de la factura
         pdf = FPDF()
@@ -53,21 +71,15 @@ if st.button("Generar Factura"):
         pdf.set_font("Arial", size=12)
 
         # Título de la factura
-        pdf.cell(200, 10, txt="Factura Generada", ln=True, align="C")
+        pdf.cell(200, 10, txt="Factura Pro", ln=True, align="C")
         pdf.ln(10)  # Espacio entre líneas
 
-        # Información de la factura
-        pdf.cell(200, 10, txt=f"Número de Factura: {numero_factura}", ln=True)
-        pdf.cell(200, 10, txt=f"Monto Total: {monto}", ln=True)
-        pdf.cell(200, 10, txt=f"Categoría: {categoria}", ln=True)
-        pdf.cell(200, 10, txt=f"Vendedor: {vendedor}", ln=True)
-        pdf.cell(200, 10, txt=f"Ciudad: {ciudad}", ln=True)
-        pdf.cell(200, 10, txt=f"Fecha: {fecha}", ln=True)
+        # Agregar contenido generado por Gemini al PDF
+        for line in respuesta.text.split("\n"):
+            pdf.cell(200, 10, txt=line, ln=True)
 
         # Guardar el PDF en el directorio actual de trabajo
-        pdf_output = "factura_Pro.pdf"  # Guarda en el directorio actual
-
-        # Crear el archivo PDF
+        pdf_output = "factura_Pro.pdf"
         pdf.output(pdf_output)
 
         # Crear un enlace de descarga en Streamlit
@@ -78,6 +90,5 @@ if st.button("Generar Factura"):
                 file_name=pdf_output,
                 mime="application/pdf"
             )
-        
     else:
         st.warning("Por favor completa todos los campos antes de generar la factura.")

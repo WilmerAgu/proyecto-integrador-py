@@ -5,7 +5,7 @@ st.set_page_config(layout="wide")
 
 st.subheader("Análisis y Filtrado de Datos")
 
-df = pd.read_csv('./static/datasets/ventas.csv')
+df = pd.read_csv('static\datasets\Afluencia_2023.csv')
 
 
 tad_descripcion, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Análisis Exploratorio", "Filtro Final Dinámico"])
@@ -18,24 +18,14 @@ with tad_descripcion:
     st.markdown('''
     ## Plantilla Básica para Proyecto Integrador
 
-    ### Introducción
+    El archivo contiene datos sobre la afluencia de personas en el Sistema de Metro de Medellín durante el año 2023. 
+    Este conjunto de datos presenta información detallada sobre los momentos de mayor afluencia de pasajeros, organizados por horas a lo largo del día. Además, incluye detalles relacionados con las líneas de autobuses que complementan el servicio del metro.
 
-    -   ¿Qué es el proyecto?
-    -   ¿Cuál es el objetivo principal?
-    -   ¿Por qué es importante?
+    Específicamente, cada registro en la tabla indica:
 
-    ### Desarrollo
-
-    -   Explicación detallada del proyecto
-    -   Procedimiento utilizado
-    -   Resultados obtenidos
-
-    ### Conclusión
-
-    -   Resumen de los resultados
-    -   Logros alcanzados
-    -   Dificultades encontradas
-    -   Aportes personales
+    Hora de subida: El horario específico en el que los usuarios abordaron el metro.
+    Líneas de autobuses: Las rutas de transporte público (buses) que operan en conjunto con el metro y que pueden estar relacionadas con los patrones de afluencia de los usuarios.
+    Este archivo permite analizar los patrones de movilidad de las personas en el sistema de transporte público de la ciudad, proporcionando datos útiles para la planificación y optimización del servicio tanto para el metro como para las líneas de autobuses. La información puede ser empleada para identificar los momentos de mayor demanda de transporte y para coordinar mejor las conexiones entre el metro y los autobuses.
     ''')
 
 #----------------------------------------------------------
@@ -47,17 +37,16 @@ with tad_descripcion:
     # Crear una pestaña para el análisis exploratorio
     tab_Análisis_Exploratorio = st.container()
 
-    import pandas as pd
-    import streamlit as st
+   
 
 # Crear una pestaña para el análisis exploratorio
 tab_Análisis_Exploratorio = st.container()
 
 with tab_Análisis_Exploratorio:    
-    st.title("Análisis Exploratorio")
+    st.title("Análisis del Metro de Medellin")
     
     # Agregar texto explicativo (Markdown)
-    st.markdown("## Datos cargados y análisis descriptivo")
+    st.markdown("## Afluecias del Metro de Medellin")
 
     # Cargar los datos desde un archivo CSV
     try:
@@ -111,7 +100,52 @@ with tab_Filtro_Final_Dinámico:
         * Se actualiza automáticamente cada vez que se realiza un filtro en las pestañas anteriores. 
         """)
 
+     # Cargar el archivo CSV
+    
+    try:
+        df = pd.read_csv('static/datasets/Afluencia_2023.csv')
+    except FileNotFoundError:
+        st.error(f"No se encontró el archivo en la ruta: {file_path}")
+        return
 
+    # Renombrar las columnas principales
+    data.columns = ['Día', 'Línea de Servicio', 'Hora de operación'] + [f'Intervalo_{i}' for i in range(3, len(data.columns) - 1)] + ['Total']
+
+    # Limpiar el DataFrame
+    data['Día'] = pd.to_datetime(data['Día'], errors='coerce')  # Convertir fechas
+    data = data.dropna(subset=['Día'])  # Eliminar filas con días inválidos
+
+    # Convertir valores de columnas numéricas (remover comas y convertir a float)
+    for col in data.columns[3:]:
+        data[col] = data[col].replace({',': ''}, regex=True).astype(float, errors='ignore')
+
+    # Crear filtros dinámicos
+    linea_seleccionada = st.selectbox("Selecciona una Línea de Servicio", options=data['Línea de Servicio'].unique())
+    rango_fechas = st.date_input("Selecciona un rango de fechas", [data['Día'].min(), data['Día'].max()])
+
+    # Aplicar filtros
+    data_filtrada = data[
+        (data['Línea de Servicio'] == linea_seleccionada) &
+        (data['Día'] >= rango_fechas[0]) & 
+        (data['Día'] <= rango_fechas[1])
+    ]
+
+    # Mostrar la tabla filtrada
+    st.dataframe(data_filtrada)
+
+    # Estadísticas relevantes
+    st.subheader("Estadísticas")
+    st.write("Total de pasajeros filtrados:", data_filtrada['Total'].sum())
+
+    # Gráfico de pasajeros por día
+    st.subheader("Gráfico de Pasajeros por Día")
+    pasajeros_por_dia = data_filtrada.groupby('Día')['Total'].sum()
+    fig, ax = plt.subplots()
+    pasajeros_por_dia.plot(kind='bar', ax=ax)
+    ax.set_title("Pasajeros por Día")
+    ax.set_xlabel("Fecha")
+    ax.set_ylabel("Total Pasajeros")
+    st.pyplot(fig)
 
     
 
