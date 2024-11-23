@@ -10,7 +10,7 @@ st.subheader("Analizador de Datos de Google Sheets")
 
 # Descripción para el usuario
 st.markdown("""
-Este programa lee datos de "Hoja 1" de una hoja de cálculo de Google Sheets y los transfiere a "Hoja 2".
+Este programa lee datos de "Hoja 1" de una hoja de cálculo de Google Sheets y transfiere el análisis a "Hoja 2".
 """)
 
 # Configuración de acceso a Google Sheets
@@ -57,8 +57,26 @@ def update_sheet(df):
         st.error(f"Error al actualizar la Hoja 2: {e}")
         return None
 
+# Función para analizar los datos y encontrar la ciudad con más ventas
+def analyze_data(df):
+    try:
+        # Convertir columna de ventas a numérico (si no lo está)
+        df["Ventas"] = pd.to_numeric(df["Ventas"], errors="coerce")
+        # Agrupar por Ciudad y sumar las ventas
+        city_sales = df.groupby("Ciudad")["Ventas"].sum().reset_index()
+        city_sales = city_sales.sort_values(by="Ventas", ascending=False)
+        # Encontrar la ciudad con más ventas
+        top_city = city_sales.iloc[0:1]  # Tomar la primera fila como la ciudad con más ventas
+        return top_city
+    except KeyError as e:
+        st.error(f"Error al analizar los datos: Falta la columna {e}")
+        return pd.DataFrame()
+    except Exception as e:
+        st.error(f"Error inesperado al analizar los datos: {e}")
+        return pd.DataFrame()
+
 # Botón para procesar los datos
-if st.button("Transferir datos de Hoja 1 a Hoja 2"):
+if st.button("Procesar datos y transferir análisis a Hoja 2"):
     if not SPREADSHEET_ID:
         st.error("Por favor, introduce el ID de la hoja de cálculo.")
     else:
@@ -68,9 +86,17 @@ if st.button("Transferir datos de Hoja 1 a Hoja 2"):
             st.header("Datos en Hoja 1")
             st.dataframe(df)
 
-            # Transferir los datos a la Hoja 2
-            result = update_sheet(df)
-            if result:
-                st.success(f"Hoja 2 actualizada. {result.get('updatedCells', 0)} celdas actualizadas.")
+            # Analizar los datos
+            top_city = analyze_data(df)
+            if not top_city.empty:
+                st.header("Ciudad con más ventas")
+                st.dataframe(top_city)
+
+                # Transferir el análisis a la Hoja 2
+                result = update_sheet(top_city)
+                if result:
+                    st.success(f"Análisis transferido a Hoja 2. {result.get('updatedCells', 0)} celdas actualizadas.")
+            else:
+                st.warning("No se pudo analizar los datos.")
         else:
             st.warning("No se encontraron datos en la Hoja 1.")
