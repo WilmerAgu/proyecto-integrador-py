@@ -19,27 +19,32 @@ col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.image("./static/Aleja.jpeg", width=200 )  # Reemplaza con la ruta de la foto
+<<<<<<< HEAD
+    st.write("*[Alejandra Gonzalez]*")
+    st.write("[Desarrollador]")
+=======
     st.write("**[Alejandra Gonzalez]**")
     st.write("[Desarrolladora]")
+>>>>>>> 0c73c35e6a42f25853d1c948b7856afe89bcbcec
 
 with col2:
     st.image("./static/Wilmer.jpeg", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Wilmer Agudelo]**")
+    st.write("*[Wilmer Agudelo]*")
     st.write("[Desarrollador ]")
 
 with col3:
     st.image("./static/Daniel.jpeg", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Daniel Sanchez]**")
+    st.write("*[Daniel Sanchez]*")
     st.write("[Desarrollador ]")
 
 with col4:
     st.image("./static/Andres.jpeg", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Andres Osorio]**")
+    st.write("*[Andres Osorio]*")
     st.write("[Desarrollador ]")
 
 with col5:
     st.image("./static/Mauro.jpeg", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Mauricio Escobar]**")
+    st.write("*[Mauricio Escobar]*")
     st.write("[Desarrollador]")
     
     

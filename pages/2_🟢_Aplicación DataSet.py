@@ -1,17 +1,18 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
+import datetime
 
 st.set_page_config(layout="wide")
 
 st.subheader("Análisis y Filtrado de Datos")
 
-df = pd.read_csv('static\datasets\Afluencia_2023.csv')
-
+df = pd.read_csv('static/datasets/Afluencia_2023.csv')
 
 tad_descripcion, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Análisis Exploratorio", "Filtro Final Dinámico"])
 
 #----------------------------------------------------------
-#Generador de datos
+# Generador de datos
 #----------------------------------------------------------
 with tad_descripcion:      
 
@@ -28,25 +29,18 @@ with tad_descripcion:
     Este archivo permite analizar los patrones de movilidad de las personas en el sistema de transporte público de la ciudad, proporcionando datos útiles para la planificación y optimización del servicio tanto para el metro como para las líneas de autobuses. La información puede ser empleada para identificar los momentos de mayor demanda de transporte y para coordinar mejor las conexiones entre el metro y los autobuses.
     ''')
 
+    # Mostrar la hora actual
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.write(f"Hora actual: {current_time}")
+
 #----------------------------------------------------------
-#Analítica 1
+# Analítica 1
 #----------------------------------------------------------
-# Crear una pestaña para el análisis exploratorio
-    tab_Análisis_Exploratorio = st.container()
-
-    # Crear una pestaña para el análisis exploratorio
-    tab_Análisis_Exploratorio = st.container()
-
-   
-
-# Crear una pestaña para el análisis exploratorio
-tab_Análisis_Exploratorio = st.container()
-
 with tab_Análisis_Exploratorio:    
     st.title("Análisis del Metro de Medellin")
     
     # Agregar texto explicativo (Markdown)
-    st.markdown("## Afluecias del Metro de Medellin")
+    st.markdown("## Afluencias del Metro de Medellin")
 
     # Cargar los datos desde un archivo CSV
     try:
@@ -81,17 +75,92 @@ with tab_Análisis_Exploratorio:
             # Mensaje de advertencia si la columna no existe
             st.warning("La columna 'Línea de Servicio' no está en el DataFrame.")
 
+        # Agregar gráficos adicionales
+        # Gráfico de afluencia por hora
+        st.markdown("### Gráfico de Afluencia por Hora")
+        if 'Hora de operación' in df.columns:
+            afluencia_por_hora = df.groupby('Hora de operación')['Total'].sum()
+            fig, ax = plt.subplots(figsize=(10, 6))
+            afluencia_por_hora.plot(kind='line', ax=ax)
+            ax.set_title("Afluencia de Pasajeros por Hora")
+            ax.set_xlabel("Hora")
+            ax.set_ylabel("Total de Pasajeros")
+            st.pyplot(fig)
+
+        # Gráfico de distribución de la afluencia total
+        st.markdown("### Gráfico de Distribución de la Afluencia Total")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        df['Total'].plot(kind='hist', bins=20, ax=ax, alpha=0.7, color='skyblue')
+        ax.set_title("Distribución de la Afluencia Total")
+        ax.set_xlabel("Total de Pasajeros")
+        ax.set_ylabel("Frecuencia")
+        st.pyplot(fig)
+
     except FileNotFoundError:
         st.error("El archivo 'Afluencia_2023.csv' no se encontró. Verifica la ruta y vuelve a intentarlo.")
     except Exception as e:
         st.error(f"Se produjo un error al procesar el archivo: {e}")
 
-      
-    
 #----------------------------------------------------------
+# Analítica 3
+#----------------------------------------------------------
+<<<<<<< HEAD
+with tab_Filtro_Final_Dinámico:
+    st.title("Filtro Final Dinámico")
+    st.markdown("""
+    * Muestra un resumen dinámico del DataFrame filtrado. 
+    * Incluye información como los criterios de filtrado aplicados, la tabla de datos filtrados, gráficos y estadísticas relevantes.
+    * Se actualiza automáticamente cada vez que se realiza un filtro en las pestañas anteriores. 
+    """)
 
-#Analítica 3
-#----------------------------------------------------------
+    # Cargar el archivo CSV
+    try:
+        data = pd.read_csv('static/datasets/Afluencia_2023.csv')
+    except FileNotFoundError:
+        st.error(f"No se encontró el archivo en la ruta: static/datasets/Afluencia_2023.csv")
+    
+    # Renombrar las columnas principales
+    data.columns = ['Día', 'Línea de Servicio', 'Hora de operación'] + [f'Intervalo_{i}' for i in range(3, len(data.columns) - 1)] + ['Total']
+
+    # Limpiar el DataFrame
+    data['Día'] = pd.to_datetime(data['Día'], errors='coerce')  # Convertir fechas
+    data = data.dropna(subset=['Día'])  # Eliminar filas con días inválidos
+
+    # Convertir valores de columnas numéricas (remover comas y convertir a float)
+    for col in data.columns[3:]:
+        data[col] = data[col].replace({',': ''}, regex=True).astype(float, errors='ignore')
+
+    # Crear filtros dinámicos
+    linea_seleccionada = st.selectbox("Selecciona una Línea de Servicio", options=data['Línea de Servicio'].unique())
+    rango_fechas = st.date_input("Selecciona un rango de fechas", [data['Día'].min(), data['Día'].max()])
+
+    # Filtrar las fechas para que tengan el mismo formato
+    rango_fechas = [pd.to_datetime(fecha) for fecha in rango_fechas]  # Convertir a datetime64[ns]
+
+    # Aplicar filtros
+    data_filtrada = data[
+        (data['Línea de Servicio'] == linea_seleccionada) &
+        (data['Día'] >= rango_fechas[0]) &  
+        (data['Día'] <= rango_fechas[1])
+    ]
+
+    # Mostrar la tabla filtrada
+    st.dataframe(data_filtrada)
+
+    # Estadísticas relevantes
+    st.subheader("Estadísticas")
+    st.write("Total de pasajeros filtrados:", data_filtrada['Total'].sum())
+
+    # Gráfico de pasajeros por día
+    st.subheader("Gráfico de Pasajeros por Día")
+    pasajeros_por_dia = data_filtrada.groupby('Día')['Total'].sum()
+    fig, ax = plt.subplots()
+    pasajeros_por_dia.plot(kind='bar', ax=ax)
+    ax.set_title("Pasajeros por Día")
+    ax.set_xlabel("Fecha")
+    ax.set_ylabel("Total Pasajeros")
+    st.pyplot(fig)
+=======
 # Pestaña de Filtro Final Dinámico
     with st.sidebar:  # Cambia esta línea según cómo quieras organizar tu app
      st.title("Filtro Final Dinámico")
@@ -103,3 +172,4 @@ with tab_Análisis_Exploratorio:
 
 
 
+>>>>>>> 0c73c35e6a42f25853d1c948b7856afe89bcbcec
