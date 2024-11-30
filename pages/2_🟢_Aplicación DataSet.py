@@ -47,45 +47,24 @@ with tab_descripcion:
 with tab_analisis_exploratorio:    
     st.title("Análisis del Metro de Medellín")
     
-    # Agregar texto explicativo
     st.markdown("## Afluencias del Metro de Medellín")
 
     if not df.empty:
-        # Mostrar las primeras 5 filas del DataFrame
         st.markdown("### 1. Muestra las primeras 5 filas del DataFrame")
         st.dataframe(df.head())
 
-        # Mostrar la cantidad de filas y columnas
         st.markdown("### 2. Muestra la cantidad de filas y columnas del DataFrame")
         st.write(f"El DataFrame tiene **{df.shape[0]} filas** y **{df.shape[1]} columnas**.")
 
-        # Mostrar los tipos de datos de cada columna
-        st.markdown("### 3. Muestra los tipos de datos de cada columna")
-        st.dataframe(df.dtypes)
-
-        # Identificar y mostrar las columnas con valores nulos
-        st.markdown("### 4. Identifica y muestra las columnas con valores nulos")
+        st.markdown("### 3. Identifica y muestra las columnas con valores nulos")
         st.dataframe(df.isnull().sum(), height=150)
 
-        # Mostrar un resumen estadístico de las columnas numéricas
-        st.markdown("### 5. Muestra un resumen estadístico de las columnas numéricas")
+        st.markdown("### 4. Muestra un resumen estadístico de las columnas numéricas")
         st.dataframe(df.describe())
 
-        # Agregar gráficos adicionales
-        # Gráfico de distribución de la afluencia total
-        st.markdown("### Gráfico de Distribución de la Afluencia Total")
-        if 'Total' in df.columns:
-            fig, ax = plt.subplots(figsize=(10, 6))
-            df['Total'].plot(kind='hist', bins=20, ax=ax, alpha=0.7, color='skyblue')
-            ax.set_title("Distribución de la Afluencia Total")
-            ax.set_xlabel("Total de Pasajeros")
-            ax.set_ylabel("Frecuencia")
-            st.pyplot(fig)
-
 # ----------------------------------------------------------
-# Analítica 3
+# Filtros Dinámicos
 # ----------------------------------------------------------
-# Pestaña de Filtro Final Dinámico
 with tab_filtro_final_dinamico:
     st.sidebar.title("Filtro Dinámico")
     st.markdown("### Filtrado por Línea de Servicio")
@@ -100,14 +79,37 @@ with tab_filtro_final_dinamico:
         st.write(f"*Datos filtrados para la línea:* {seleccion_linea}")
         st.dataframe(df_filtrado)
 
-        # Gráfico de barras para la línea filtrada
-        if 'Afluencia' in df_filtrado.columns:
-            afluencia_por_linea_filtrada = df_filtrado.groupby('Línea de Servicio')['Afluencia'].sum()
+        # Gráfico de barras: Total de pasajeros por hora
+        if 'Hora de operación' in df_filtrado.columns and 'Total' in df_filtrado.columns:
+            st.markdown("### Total de Pasajeros por Hora de Operación")
+            total_por_hora = df_filtrado.groupby('Hora de operación')['Total'].sum()
             fig, ax = plt.subplots(figsize=(10, 6))
-            afluencia_por_linea_filtrada.plot(kind='bar', ax=ax, color='green')
-            ax.set_title(f"Afluencia de Pasajeros por Línea - {seleccion_linea}")
-            ax.set_xlabel("Línea de Servicio")
-            ax.set_ylabel("Total de Afluencia")
+            total_por_hora.plot(kind='bar', ax=ax, color='blue', alpha=0.7)
+            ax.set_title(f"Total de Pasajeros por Hora - {seleccion_linea}")
+            ax.set_xlabel("Hora de Operación")
+            ax.set_ylabel("Total de Pasajeros")
+            st.pyplot(fig)
+
+        # Gráfico de barras: Afluencia por estación
+        if 'Estación' in df_filtrado.columns and 'Afluencia' in df_filtrado.columns:
+            st.markdown("### Afluencia por Estación")
+            afluencia_por_estacion = df_filtrado.groupby('Estación')['Afluencia'].sum()
+            fig, ax = plt.subplots(figsize=(10, 6))
+            afluencia_por_estacion.plot(kind='bar', ax=ax, color='orange', alpha=0.8)
+            ax.set_title(f"Afluencia por Estación - {seleccion_linea}")
+            ax.set_xlabel("Estación")
+            ax.set_ylabel("Afluencia Total")
+            st.pyplot(fig)
+
+        # Gráfico de barras: Afluencia promedio por día
+        if 'Día de operación' in df_filtrado.columns and 'Afluencia' in df_filtrado.columns:
+            st.markdown("### Afluencia Promedio por Día de Operación")
+            afluencia_promedio_por_dia = df_filtrado.groupby('Día de operación')['Afluencia'].mean()
+            fig, ax = plt.subplots(figsize=(10, 6))
+            afluencia_promedio_por_dia.plot(kind='bar', ax=ax, color='green', alpha=0.6)
+            ax.set_title(f"Afluencia Promedio por Día - {seleccion_linea}")
+            ax.set_xlabel("Día de Operación")
+            ax.set_ylabel("Afluencia Promedio")
             st.pyplot(fig)
     else:
         st.warning("La columna 'Línea de Servicio' no está disponible en el DataFrame.")

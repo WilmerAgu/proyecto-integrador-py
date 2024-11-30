@@ -19,7 +19,7 @@ numero_factura = st.text_input("¿Cuál es el número de factura?")
 monto = st.number_input("¿Cuál es el monto total de la factura?", min_value=0.01)
 categoria = st.selectbox(
     "¿En qué categoría se encuentra el producto?",
-    ["Celulares", "Tablets", "DDS", "Audífonos", "Laptops"]
+    ["Celulares", "Tablets", "SSD", "Audífonos", "Laptops"]
 )
 vendedor = st.text_input("¿Quién es el vendedor?")
 ciudad = st.text_input("¿En qué ciudad se realizó la venta?")
