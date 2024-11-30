@@ -3,132 +3,99 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import datetime
 
+# Configuración de la página
 st.set_page_config(layout="wide")
 
-st.subheader("Análisis y Filtrado de Datos")
+st.subheader("Análisis y Filtrado de Datos del Metro de Medellín")
 
-# Leer el CSV
-df = pd.read_csv('static/datasets/Afluencia_2023.csv')
+# Leer el archivo CSV
+try:
+    df = pd.read_csv('static/datasets/Afluencia_2023.csv')
+    st.success("Datos cargados correctamente.")
+except FileNotFoundError:
+    st.error("El archivo 'Afluencia_2023.csv' no se encontró. Verifica la ruta y vuelve a intentarlo.")
+    st.stop()
 
-tad_descripcion, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(
-    ["Descripción", "Análisis Exploratorio", "Filtro Final Dinámico"])
+# Validar si el DataFrame tiene datos
+if df.empty:
+    st.error("El archivo cargado no contiene datos.")
+    st.stop()
+
+# Tabs para la navegación
+tab_descripcion, tab_analisis, tab_filtro = st.tabs(["Descripción", "Análisis Exploratorio", "Filtro Dinámico"])
 
 # ----------------------------------------------------------
-# Generador de datos
+# Descripción de los datos
 # ----------------------------------------------------------
-with tad_descripcion:
-    st.markdown('''
+with tab_descripcion:
+    st.markdown("""
     ## Plantilla Básica para Proyecto Integrador
-
-    El archivo contiene datos sobre la afluencia de personas en el Sistema de Metro de Medellín durante el año 2023. 
-    Este conjunto de datos presenta información detallada sobre los momentos de mayor afluencia de pasajeros, organizados por horas a lo largo del día. Además, incluye detalles relacionados con las líneas de autobuses que complementan el servicio del metro.
-
-    Específicamente, cada registro en la tabla indica:
-
-    Hora de subida: El horario específico en el que los usuarios abordaron el metro.
-    Líneas de autobuses: Las rutas de transporte público (buses) que operan en conjunto con el metro y que pueden estar relacionadas con los patrones de afluencia de los usuarios.
-    Este archivo permite analizar los patrones de movilidad de las personas en el sistema de transporte público de la ciudad, proporcionando datos útiles para la planificación y optimización del servicio tanto para el metro como para las líneas de autobuses. La información puede ser empleada para identificar los momentos de mayor demanda de transporte y para coordinar mejor las conexiones entre el metro y los autobuses.
-    ''')
-
+    Este archivo contiene datos sobre la afluencia de personas en el Sistema Metro de Medellín durante 2023.
+    """)
+    
     # Mostrar la hora actual
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.write(f"Hora actual: {current_time}")
+    st.write(f"**Hora actual:** {current_time}")
+    
+    # Mostrar las primeras filas del DataFrame
+    st.write("**Vista previa de los datos:**")
+    st.dataframe(df.head())
 
 # ----------------------------------------------------------
-# Analítica 1
+# Análisis Exploratorio
 # ----------------------------------------------------------
-with tab_Análisis_Exploratorio:
-    st.title("Análisis del Metro de Medellin")
+with tab_analisis:
+    st.title("Análisis Exploratorio")
 
-    # Agregar texto explicativo (Markdown)
-    st.markdown("## Afluencias del Metro de Medellin")
+    # Mostrar información general
+    st.markdown("### Información general del DataFrame")
+    st.write(f"El DataFrame tiene **{df.shape[0]} filas** y **{df.shape[1]} columnas**.")
+    st.write("**Tipos de datos:**")
+    st.dataframe(df.dtypes)
 
-    # Cargar los datos desde un archivo CSV
-    try:
-        df = pd.read_csv('static/datasets/Afluencia_2023.csv')
+    # Identificar valores nulos
+    st.markdown("### Valores nulos en las columnas")
+    st.dataframe(df.isnull().sum(), height=150)
 
-        # Mostrar las primeras 5 filas del DataFrame
-        st.markdown("### 1. Muestra las primeras 5 filas del DataFrame")
-        st.dataframe(df.head())
+    # Resumen estadístico
+    st.markdown("### Resumen estadístico de las columnas numéricas")
+    st.dataframe(df.describe())
 
-        # Mostrar la cantidad de filas y columnas
-        st.markdown("### 2. Muestra la cantidad de filas y columnas del DataFrame")
-        st.write(f"El DataFrame tiene **{df.shape[0]} filas** y **{df.shape[1]} columnas**.")
-
-        # Mostrar los tipos de datos de cada columna
-        st.markdown("### 3. Muestra los tipos de datos de cada columna")
-        st.dataframe(df.dtypes)
-
-        # Identificar y mostrar las columnas con valores nulos
-        st.markdown("### 4. Identifica y muestra las columnas con valores nulos")
-        st.dataframe(df.isnull().sum(), height=150)
-
-        # Mostrar un resumen estadístico de las columnas numéricas
-        st.markdown("### 5. Muestra un resumen estadístico de las columnas numéricas")
-        st.dataframe(df.describe())
-
-        # Mostrar una tabla con la frecuencia de valores únicos para la columna 'Línea de Servicio'
-        st.markdown("### 6. Frecuencia de valores únicos en la columna 'Línea de Servicio'")
-        if 'Línea de Servicio' in df.columns:
-            st.dataframe(df['Línea de Servicio'].value_counts().rename("Frecuencia"))
-        else:
-            st.warning("La columna 'Línea de Servicio' no está en el DataFrame.")
-
-        # Agregar gráficos adicionales
-        # Gráfico de afluencia por hora
-        st.markdown("### Gráfico de Afluencia por Hora")
-        if 'Hora de operación' in df.columns:
-            afluencia_por_hora = df.groupby('Hora de operación')['Total'].sum()
-            fig, ax = plt.subplots(figsize=(10, 6))
-            afluencia_por_hora.plot(kind='line', ax=ax)
-            ax.set_title("Afluencia de Pasajeros por Hora")
-            ax.set_xlabel("Hora")
-            ax.set_ylabel("Total de Pasajeros")
-            st.pyplot(fig)
-
-        # Gráfico de distribución de la afluencia total
-        st.markdown("### Gráfico de Distribución de la Afluencia Total")
+    # Gráfico de barras basado en las columnas relevantes
+    if 'Línea de Servicio' in df.columns and 'Afluencia' in df.columns:
+        afluencia_por_linea = df.groupby('Línea de Servicio')['Afluencia'].sum()
         fig, ax = plt.subplots(figsize=(10, 6))
-        df['Total'].plot(kind='hist', bins=20, ax=ax, alpha=0.7, color='skyblue')
-        ax.set_title("Distribución de la Afluencia Total")
-        ax.set_xlabel("Total de Pasajeros")
-        ax.set_ylabel("Frecuencia")
+        afluencia_por_linea.plot(kind='bar', ax=ax, color='blue')  # Gráfico de barras
+        ax.set_title("Afluencia de Pasajeros por Línea de Servicio")
+        ax.set_xlabel("Línea de Servicio")
+        ax.set_ylabel("Total de Afluencia")
         st.pyplot(fig)
 
-    except FileNotFoundError:
-        st.error("El archivo 'Afluencia_2023.csv' no se encontró. Verifica la ruta y vuelve a intentarlo.")
-    except Exception as e:
-        st.error(f"Se produjo un error al procesar el archivo: {e}")
-
 # ----------------------------------------------------------
-# Filtro Final Dinámico
+# Filtro Dinámico
 # ----------------------------------------------------------
-with tab_Filtro_Final_Dinámico:
-    st.sidebar.title("Filtro Final Dinámico")
-    st.markdown("""
-    * Muestra un resumen dinámico del DataFrame filtrado. 
-    * Incluye información como los criterios de filtrado aplicados, la tabla de datos filtrados, gráficos y estadísticas relevantes.
-    * Se actualiza automáticamente cada vez que se realiza un filtro en las pestañas anteriores. 
-    """)
-
-    # Filtrado de los datos
+with tab_filtro:
+    st.sidebar.title("Filtro Dinámico")
     st.markdown("### Filtrado por Línea de Servicio")
-    lineas = df['Línea de Servicio'].unique()
-    seleccion_linea = st.selectbox("Selecciona una línea de servicio:", lineas)
 
-    # Filtrar el DataFrame basado en la selección
-    df_filtrado_linea = df[df['Línea de Servicio'] == seleccion_linea]
+    if 'Línea de Servicio' in df.columns:
+        # Lista de líneas de servicio
+        lineas = df['Línea de Servicio'].dropna().unique()
+        seleccion_linea = st.sidebar.selectbox("Selecciona una línea de servicio:", lineas)
 
-    # Verificar que la columna 'Hora de operación' esté en el DataFrame filtrado
-    if 'Hora de operación' in df_filtrado_linea.columns:
-        # Agrupar por 'Hora de operación' y mostrar gráfico
-        afluencia_por_hora_filtrada = df_filtrado_linea.groupby('Hora de operación')['Total'].sum()
-        fig, ax = plt.subplots(figsize=(10, 6))
-        afluencia_por_hora_filtrada.plot(kind='line', ax=ax)
-        ax.set_title(f"Afluencia de Pasajeros por Hora - {seleccion_linea}")
-        ax.set_xlabel("Hora")
-        ax.set_ylabel("Total de Pasajeros")
-        st.pyplot(fig)
+        # Filtrar el DataFrame por la línea seleccionada
+        df_filtrado = df[df['Línea de Servicio'] == seleccion_linea]
+        st.write(f"**Datos filtrados para la línea:** {seleccion_linea}")
+        st.dataframe(df_filtrado)
 
+        # Gráfico de barras para la línea filtrada
+        if 'Afluencia' in df_filtrado.columns:
+            afluencia_por_linea_filtrada = df_filtrado.groupby('Línea de Servicio')['Afluencia'].sum()
+            fig, ax = plt.subplots(figsize=(10, 6))
+            afluencia_por_linea_filtrada.plot(kind='bar', ax=ax, color='green')  # Gráfico de barras
+            ax.set_title(f"Afluencia de Pasajeros por Línea - {seleccion_linea}")
+            ax.set_xlabel("Línea de Servicio")
+            ax.set_ylabel("Total de Afluencia")
+            st.pyplot(fig)
     else:
-        st.warning("La columna 'Hora de operación' no se encuentra en el DataFrame filtrado.")
+        st.warning("La columna 'Línea de Servicio' no está disponible en el DataFrame.")
