@@ -9,7 +9,7 @@ st.title("Proyecto Integrador: Factura Pro")
 st.subheader("Un Viaje Creativo con Factura Pro")
 
 # Imagen de fondo
-image = Image.open("./static/proyecto integrador.png")
+image = Image.open("./static/IMG-FACT.jpeg")
 st.image(image, width=700, use_column_width=True)
 
 # Integrantes
