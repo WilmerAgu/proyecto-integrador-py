@@ -7,15 +7,16 @@ st.set_page_config(layout="wide")
 
 st.subheader("Análisis y Filtrado de Datos")
 
+# Leer el CSV
 df = pd.read_csv('static/datasets/Afluencia_2023.csv')
 
-tad_descripcion, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Análisis Exploratorio", "Filtro Final Dinámico"])
+tad_descripcion, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(
+    ["Descripción", "Análisis Exploratorio", "Filtro Final Dinámico"])
 
-#----------------------------------------------------------
+# ----------------------------------------------------------
 # Generador de datos
-#----------------------------------------------------------
-with tad_descripcion:      
-
+# ----------------------------------------------------------
+with tad_descripcion:
     st.markdown('''
     ## Plantilla Básica para Proyecto Integrador
 
@@ -33,19 +34,19 @@ with tad_descripcion:
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     st.write(f"Hora actual: {current_time}")
 
-#----------------------------------------------------------
+# ----------------------------------------------------------
 # Analítica 1
-#----------------------------------------------------------
-with tab_Análisis_Exploratorio:    
+# ----------------------------------------------------------
+with tab_Análisis_Exploratorio:
     st.title("Análisis del Metro de Medellin")
-    
+
     # Agregar texto explicativo (Markdown)
     st.markdown("## Afluencias del Metro de Medellin")
 
     # Cargar los datos desde un archivo CSV
     try:
         df = pd.read_csv('static/datasets/Afluencia_2023.csv')
-        
+
         # Mostrar las primeras 5 filas del DataFrame
         st.markdown("### 1. Muestra las primeras 5 filas del DataFrame")
         st.dataframe(df.head())
@@ -69,10 +70,8 @@ with tab_Análisis_Exploratorio:
         # Mostrar una tabla con la frecuencia de valores únicos para la columna 'Línea de Servicio'
         st.markdown("### 6. Frecuencia de valores únicos en la columna 'Línea de Servicio'")
         if 'Línea de Servicio' in df.columns:
-            # Mostrar la frecuencia de valores únicos
             st.dataframe(df['Línea de Servicio'].value_counts().rename("Frecuencia"))
         else:
-            # Mensaje de advertencia si la columna no existe
             st.warning("La columna 'Línea de Servicio' no está en el DataFrame.")
 
         # Agregar gráficos adicionales
@@ -101,18 +100,35 @@ with tab_Análisis_Exploratorio:
     except Exception as e:
         st.error(f"Se produjo un error al procesar el archivo: {e}")
 
-
-#----------------------------------------------------------
-# Analítica 3
-#----------------------------------------------------------
-# Pestaña de Filtro Final Dinámico
-    with st.sidebar:  # Cambia esta línea según cómo quieras organizar tu app
-     st.title("Filtro Final Dinámico")
+# ----------------------------------------------------------
+# Filtro Final Dinámico
+# ----------------------------------------------------------
+with tab_Filtro_Final_Dinámico:
+    st.sidebar.title("Filtro Final Dinámico")
     st.markdown("""
-        * Muestra un resumen dinámico del DataFrame filtrado. 
-        * Incluye información como los criterios de filtrado aplicados, la tabla de datos filtrados, gráficos y estadísticas relevantes.
-        * Se actualiza automáticamente cada vez que se realiza un filtro en las pestañas anteriores. 
-        """)
+    * Muestra un resumen dinámico del DataFrame filtrado. 
+    * Incluye información como los criterios de filtrado aplicados, la tabla de datos filtrados, gráficos y estadísticas relevantes.
+    * Se actualiza automáticamente cada vez que se realiza un filtro en las pestañas anteriores. 
+    """)
 
+    # Filtrado de los datos
+    st.markdown("### Filtrado por Línea de Servicio")
+    lineas = df['Línea de Servicio'].unique()
+    seleccion_linea = st.selectbox("Selecciona una línea de servicio:", lineas)
 
+    # Filtrar el DataFrame basado en la selección
+    df_filtrado_linea = df[df['Línea de Servicio'] == seleccion_linea]
 
+    # Verificar que la columna 'Hora de operación' esté en el DataFrame filtrado
+    if 'Hora de operación' in df_filtrado_linea.columns:
+        # Agrupar por 'Hora de operación' y mostrar gráfico
+        afluencia_por_hora_filtrada = df_filtrado_linea.groupby('Hora de operación')['Total'].sum()
+        fig, ax = plt.subplots(figsize=(10, 6))
+        afluencia_por_hora_filtrada.plot(kind='line', ax=ax)
+        ax.set_title(f"Afluencia de Pasajeros por Hora - {seleccion_linea}")
+        ax.set_xlabel("Hora")
+        ax.set_ylabel("Total de Pasajeros")
+        st.pyplot(fig)
+
+    else:
+        st.warning("La columna 'Hora de operación' no se encuentra en el DataFrame filtrado.")
