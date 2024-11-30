@@ -82,7 +82,7 @@ with tab_generador:
     fake = Faker('es_CO')
 
     ciudades_colombianas = ['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Manizales']
-    categorias_productos = ['Celular', 'Laptop', 'Tablet', 'Audífonos', 'DDS']
+    categorias_productos = ['Celular', 'Laptop', 'Tablet', 'Audífonos', 'SSD']
     vendedores = [
         'Carlos Morales', 'Tatiana Salas', 'Camila Guzman', 'Sergio Torres',
         'Luisa Gomez', 'Daniel Salinas', 'Ana Florez', 'Andres Escobar', 'Juan Quiroz', 'Marcela Ocampo'
